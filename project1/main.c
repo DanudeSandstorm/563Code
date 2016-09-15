@@ -7,49 +7,14 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdarg.h>
+
 
 #define CLOCK_SPEED 80000000 // 80 Mhz
 #define MAX_LOWER_VAL 9950
 #define MIN_LOWER_VAL 50
 #define SAMPLES 1000
 
-/* A wrapper function that reads integers char-by-char.
-	 Int string parsed on <Enter> (or by hitting max length).
-*/
-int USART_ReadInt(USART_TypeDef *USARTx) {
-	// int max value is 32767, which has 5 chars
-	int bufLen = 5;
-	char buffer[bufLen];
-	memset(buffer, '0', bufLen);
-	
-	int curByte = 1;
-	char readByte;
-	do {
-		readByte = USART_Read(USARTx);
-		
-		// Write buffer from right to left
-		buffer[curByte] = readByte;
-		curByte++;
-	} while (readByte != '\r' && curByte <= bufLen);
-	
-	return atoi(buffer);
-}
 
-/* Make printing formatted strings to USART easier.
-*/
-void USART_WriteEZ(USART_TypeDef *USARTx, char *format, ...) {
-	char buffer[256];
-	
-	// This is the silly C way we access varargs, so we can mash our formatted
-	// string into a buffer
-	va_list args;
-	va_start (args, format);
-	vsprintf (buffer,format, args);
-	va_end (args);
-	
-	USART_Write(USARTx, (uint8_t *)buffer, strlen(buffer));
-}	
 
 /* Set LED color to correspond to GPIO value.
    High gives Green
