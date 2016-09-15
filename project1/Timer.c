@@ -1,9 +1,13 @@
 #include "Timer.h"
 
-void Timer_Init(TIM_TypeDef * TIMx, int prescalar) {
+void TIM2_Init(void) {
 	RCC->APB1ENR1 |= RCC_APB1ENR1_TIM2EN;	// Enable TIM2
-	TIMx->PSC = prescalar;								// Set prescalar
-	TIMx->EGR |= TIM_EGR_UG;							// Trigger timer event to force load prescalar
+
+}
+
+void Timer_Prescalar(TIM_TypeDef * TIMx, int prescalar) {
+	TIMx->PSC = prescalar;		// Set prescalar
+	TIMx->EGR |= TIM_EGR_UG;	// Trigger timer event to force load prescalar
 }
 
 void Timer_Reset(TIM_TypeDef * TIMx) {

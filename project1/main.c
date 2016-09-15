@@ -50,6 +50,7 @@ int main(void){
 	System_Clock_Init(); // Switch System Clock = 80 MHz
 	LED_Init();
 	UART2_Init();
+	TIM2_Init();
 	
 	// GPIO Init
 	RCC->AHB2ENR |= RCC_AHB2ENR_GPIOAEN; // enable GPIO clock
@@ -58,7 +59,7 @@ int main(void){
 	
 	// Initialize timer with millisecond prescalar
   int prescalar = 79; // Value achieved via magic (re: evesdropping)
-	Timer_Init(TIM2, prescalar);
+	Timer_Prescalar(TIM2, prescalar);
 	
 	POST();
 	
