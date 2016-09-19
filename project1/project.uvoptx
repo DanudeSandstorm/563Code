@@ -166,18 +166,18 @@
         <Bp>
           <Number>0</Number>
           <Type>0</Type>
-          <LineNumber>34</LineNumber>
+          <LineNumber>75</LineNumber>
           <EnabledFlag>1</EnabledFlag>
-          <Address>134218816</Address>
+          <Address>134219760</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
           <SizeOfObject>0</SizeOfObject>
           <BreakByAccess>0</BreakByAccess>
           <BreakIfRCount>1</BreakIfRCount>
-          <Filename>\mightor\home\fall2013\jim5776\Documents\563Code\project1\\mightor\home\fall2013\jim5776\Documents\563Code\project1\main.c</Filename>
+          <Filename>\\mightor\home\mightor\home\fall2013\jim5776\Documents\563Code\project1\mightor\home\fall2013\jim5776\Documents\563Code\project1\main.c</Filename>
           <ExecCommand></ExecCommand>
-          <Expression>\\project\/mightor/home/fall2013/jim5776/Documents/563Code/project1/main.c\34</Expression>
+          <Expression>\\project\/mightor/home/fall2013/jim5776/Documents/563Code/project1/main.c\75</Expression>
         </Bp>
       </Breakpoint>
       <WatchWindow1>
@@ -246,7 +246,7 @@
       <GroupNumber>1</GroupNumber>
       <FileNumber>1</FileNumber>
       <FileType>1</FileType>
-      <tvExp>0</tvExp>
+      <tvExp>1</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
       <PathWithFileName>.\main.c</PathWithFileName>
@@ -273,7 +273,7 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>.\stm32l476xx.h</PathWithFileName>
+      <PathWithFileName>..\shared\stm32l476xx.h</PathWithFileName>
       <FilenameWithoutPath>stm32l476xx.h</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
@@ -309,7 +309,7 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>.\UART.c</PathWithFileName>
+      <PathWithFileName>..\shared\UART.c</PathWithFileName>
       <FilenameWithoutPath>UART.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
@@ -333,7 +333,7 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>.\Timer.c</PathWithFileName>
+      <PathWithFileName>..\shared\Timer.c</PathWithFileName>
       <FilenameWithoutPath>Timer.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
@@ -345,7 +345,7 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>.\GPIO.c</PathWithFileName>
+      <PathWithFileName>..\shared\GPIO.c</PathWithFileName>
       <FilenameWithoutPath>GPIO.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
