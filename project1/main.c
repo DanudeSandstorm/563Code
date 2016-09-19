@@ -22,7 +22,8 @@
    Low gives Red
 */
 void POST() {
-	if (GPIOA->IDR & GPIO_IDR_IDR_0) {
+	while (1) {
+	if (GPIO_Read(GPIOA, 2)) {
 		Red_LED_Off();
 		Green_LED_On();
 	}
@@ -30,6 +31,8 @@ void POST() {
 		Red_LED_On();
 		Green_LED_Off();
 	}
+	for(int i = 0; i < 40000; i++);
+}
 }
 
 void waitForRisingEdge() {
@@ -54,14 +57,16 @@ int main(void){
 	TIM2_Init();
 	
 	// GPIO Init
-	RCC->AHB2ENR |= RCC_AHB2ENR_GPIOAEN; // enable GPIO clock
-	GPIOA->MODER &= 0x0;	// Put pin 0 into input mode
-	GPIOA->PUPDR &= 0x2; // Enable pull-down resistor for pin 0
 	
 	GPIOA_Init();
 	GPIO_Resistor(GPIOA, 0, GPIO_RES_PULLDOWN);
 	GPIO_Mode(GPIOA, 0, GPIO_MODE_INPUT);
 	
+	GPIO_Resistor(GPIOA, 1, GPIO_RES_PULLDOWN);
+	GPIO_Mode(GPIOA, 1, GPIO_MODE_INPUT);
+	
+	GPIO_Resistor(GPIOA, 2, GPIO_RES_PULLDOWN);
+	GPIO_Mode(GPIOA, 2, GPIO_MODE_INPUT);
 	
 	// Initialize timer with millisecond prescalar
   int prescalar = 79; // Value achieved via magic (re: evesdropping)

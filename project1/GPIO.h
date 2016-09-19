@@ -16,7 +16,7 @@ void GPIO_Resistor(GPIO_TypeDef * GPIOx, uint8_t pin, uint8_t resmode);
 #define GPIO_MODE_ALTERNATE 0x2
 void GPIO_Mode(GPIO_TypeDef * GPIOx, uint8_t pin, uint8_t pinmode);
 
-//void GPIO_Read(GPIO_TypeDef * GPIOx, );
+uint8_t GPIO_Read(GPIO_TypeDef * GPIOx, uint8_t pin);
 
 
 #endif /* __STM32L476G_DISCOVERY_GPIO_H */
