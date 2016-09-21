@@ -417,7 +417,7 @@
                 <vShortEn>2</vShortEn>
                 <vShortWch>2</vShortWch>
                 <v6Lto>0</v6Lto>
-                <v6WtE>0</v6WtE>
+                <v6WtE>2</v6WtE>
                 <v6Rtti>2</v6Rtti>
                 <VariousControls>
                   <MiscControls></MiscControls>
@@ -455,7 +455,7 @@
             <File>
               <FileName>startup_stm32l476xx.s</FileName>
               <FileType>2</FileType>
-              <FilePath>.\startup_stm32l476xx.s</FilePath>
+              <FilePath>..\shared\startup_stm32l476xx.s</FilePath>
             </File>
             <File>
               <FileName>stm32l476xx.h</FileName>

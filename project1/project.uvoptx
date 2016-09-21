@@ -261,7 +261,7 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>.\startup_stm32l476xx.s</PathWithFileName>
+      <PathWithFileName>..\shared\startup_stm32l476xx.s</PathWithFileName>
       <FilenameWithoutPath>startup_stm32l476xx.s</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
