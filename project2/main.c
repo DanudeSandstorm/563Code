@@ -55,26 +55,44 @@ int main(void) {
 	GPIOA_Init();
 	
 	// TODO actually get this prescalar in a good way
-	Timer_Prescalar(TIM2, 100); // 100 us / count
+	Timer_Prescalar(TIM2, 0x1F40); // 100 us / count
 	
-	// Connect GPIO pins to TIM2 via alternate function mode
-	GPIO_Mode(GPIOA, 0, GPIO_MODE_ALTERNATE);
-	GPIO_Mode(GPIOA, 1, GPIO_MODE_ALTERNATE);
+	// Tell GPIOA pins 0 and 1 to be in Alternate Function mode
+	//GPIO_Mode(GPIOA, 0, GPIO_MODE_ALTERNATE);
+	//GPIO_Mode(GPIOA, 1, GPIO_MODE_ALTERNATE);
+	GPIOA->MODER &= ~(0xFFFF); // Unset MODER
+	GPIOA->MODER |= 0x000A;
+	
+	//Connect GPIOA pins 0 and 1 to TIM2 via alternate function mode
+	GPIOA->AFR[0] |= 0x0011;
+	
+	// Set TIM2 to PWM mode
+	TIM2->CCMR1 |= TIM_CCMR1_OC1M_2 | TIM_CCMR1_OC1M_1;
+	TIM2->CCMR1 |= TIM_CCMR1_OC1PE; // Set preload enable
+	
+	// Enable auto-reload of preload
+	TIM2->CR1 |= TIM_CR1_ARPE;
+	
+	// Enable channel output bit for TIM2
+	TIM2->CCER |= TIM_CCER_CC1E;
+	
+	// Trigger update to load the above settings
+	TIM2->EGR |= TIM_EGR_UG;
 	
 	
+	// Set period of PWM
+	TIM2->ARR = 200; // 200 cycles
+	TIM2->EGR |= TIM_EGR_UG;
 	
-	// Set the alternate function register to the timer (see datasheet)
-	// We can use the same timer with 2 channels
+	// Set pulse of PWM
+	TIM2->CCR1 = 5;
+	TIM2->EGR |= TIM_EGR_UG;
 	
-	// GPIOA PA0 AF1 = TIM2_CH1
-	// GPIOA PA1 AF1 = TIM2_CH2
-	GPIOA->AFR |= GPIO_AFRL_AFRL1;
+	// Start PWM
+	TIM2->CR1 |= TIM_CR1_CEN;
 	
-	
-	
-	
-	
-	
+	// Loop indefinitely while the timer does its thing
+	while (1);
 	// Init gpio (enable clocks, etc)
 	// Tie gpio to tim2 with alternate function
 	
@@ -87,7 +105,4 @@ int main(void) {
 	
 	// Adjust compare values from 4 to 20 to change the width, and thus position servos
 
-	TIM2->CCMR1
-	
-	return 0;
 }
