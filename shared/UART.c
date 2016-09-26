@@ -168,11 +168,11 @@ void USART_WriteEZ(USART_TypeDef *USARTx, char *format, ...) {
 /* A wrapper function that reads integers char-by-char.
 	 Int string parsed on <Enter> (or by hitting max length).
 */
+#define USART_READINT_BUFFER_LEN 5
 int USART_ReadInt(USART_TypeDef *USARTx) {
 	// int max value is 32767, which has 5 chars
-	int bufLen = 5;
-	char buffer[bufLen];
-	memset(buffer, '0', bufLen);
+	char buffer[USART_READINT_BUFFER_LEN];
+	memset(buffer, '0', USART_READINT_BUFFER_LEN);
 	
 	int curByte = 1;
 	char readByte;
@@ -182,7 +182,7 @@ int USART_ReadInt(USART_TypeDef *USARTx) {
 		// Write buffer from right to left
 		buffer[curByte] = readByte;
 		curByte++;
-	} while (readByte != '\r' && curByte <= bufLen);
+	} while (readByte != '\r' && curByte <= USART_READINT_BUFFER_LEN);
 	
 	return atoi(buffer);
 }
