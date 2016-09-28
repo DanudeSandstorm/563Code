@@ -54,38 +54,39 @@ int main(void) {
 	TIM2_Init();
 	GPIOA_Init();
 	
-	// TODO actually get this prescalar in a good way
-	Timer_Prescalar(TIM2, 0x1F40); // 100 us / count
+	// Started at 8000 and modified until I got 20ms pulses on the oscilloscope with TIMx->ARR set to 200
+	Timer_Prescalar(TIM2, 400);
 	
 	// Tell GPIOA pins 0 and 1 to be in Alternate Function mode
-	//GPIO_Mode(GPIOA, 0, GPIO_MODE_ALTERNATE);
-	//GPIO_Mode(GPIOA, 1, GPIO_MODE_ALTERNATE);
 	GPIOA->MODER &= ~(0xFFFF); // Unset MODER
 	GPIOA->MODER |= 0x000A;
 	
 	//Connect GPIOA pins 0 and 1 to TIM2 via alternate function mode
 	GPIOA->AFR[0] |= 0x0011;
 	
-	// Set TIM2 to PWM mode
-	TIM2->CCMR1 |= TIM_CCMR1_OC1M_2 | TIM_CCMR1_OC1M_1;
-	TIM2->CCMR1 |= TIM_CCMR1_OC1PE; // Set preload enable
+	// Set TIM2 Channels 1 and 2 to PWM mode
+	TIM2->CCMR1 |= TIM_CCMR1_OC1M_2 | TIM_CCMR1_OC1M_1; // Channel 1
+	TIM2->CCMR1 |= TIM_CCMR1_OC2M_2 | TIM_CCMR1_OC2M_1; // Channel 2
+	TIM2->CCMR1 |= TIM_CCMR1_OC1PE; // Channel 1 Preload Enable
+	TIM2->CCMR1 |= TIM_CCMR1_OC2PE; // Channel 2 Preload Enable
 	
 	// Enable auto-reload of preload
 	TIM2->CR1 |= TIM_CR1_ARPE;
 	
 	// Enable channel output bit for TIM2
-	TIM2->CCER |= TIM_CCER_CC1E;
+	TIM2->CCER |= TIM_CCER_CC1E;	// Channel 1
+	TIM2->CCER |= TIM_CCER_CC2E;	// Channel 2
 	
 	// Trigger update to load the above settings
 	TIM2->EGR |= TIM_EGR_UG;
 	
-	
 	// Set period of PWM
-	TIM2->ARR = 200; // 200 cycles
+	TIM2->ARR = 200; // 20ms
 	TIM2->EGR |= TIM_EGR_UG;
 	
 	// Set pulse of PWM
-	TIM2->CCR1 = 5;
+	TIM2->CCR1 = 20; // 2ms
+	TIM2->CCR2 = 20;
 	TIM2->EGR |= TIM_EGR_UG;
 	
 	// Start PWM
@@ -93,16 +94,4 @@ int main(void) {
 	
 	// Loop indefinitely while the timer does its thing
 	while (1);
-	// Init gpio (enable clocks, etc)
-	// Tie gpio to tim2 with alternate function
-	
-	// Set tim2 prescaler to 100 us
-	// Set tim2 period to 200
-	// Set mode to output - PWM (edge mode)
-	
-	// use compare 1 for gpio1/servo 1
-	// Use compare 2 for gpio2
-	
-	// Adjust compare values from 4 to 20 to change the width, and thus position servos
-
 }
