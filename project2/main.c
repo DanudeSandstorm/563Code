@@ -8,6 +8,10 @@
 #include <stdlib.h>
 
 
+#define SERVO_SCALAR 5
+
+uint8_t servoPosition = 0;
+
 void interpretCommands(char input) {
 	switch (input) {
 		// Pause recipe execution
@@ -25,13 +29,13 @@ void interpretCommands(char input) {
 		// Move 1 position to right, if possible
 		case 'R':
 		case 'r':
-			// TODO
+			setServoPosition(servoPosition + 1);
 			break;
 		
 		// Move 1 position to left, if possible
 		case 'L':
 		case 'l':
-			// TODO
+			setServoPosition(servoPosition - 1);
 			break;
 		
 		// No-op
@@ -48,6 +52,25 @@ void interpretCommands(char input) {
 	}
 }
 
+void setServoPosition(uint8_t position) {
+	// Handle out of bounds values
+	if (position > 5) {
+		setErrorState();
+		return;
+	}
+
+	servoPosition = position;
+	uint8_t pulseWidth = position * SERVO_SCALAR;
+
+	// Set duty cycle of PWM
+	TIM2->CCR1 = pulseWidth;
+	TIM2->CCR2 = pulseWidth;
+	TIM2->EGR |= TIM_EGR_UG;
+}
+
+void setErrorState() {
+
+}
 
 int main(void) {
 
@@ -84,10 +107,8 @@ int main(void) {
 	TIM2->ARR = 200; // 20ms
 	TIM2->EGR |= TIM_EGR_UG;
 	
-	// Set pulse of PWM
-	TIM2->CCR1 = 20; // 2ms
-	TIM2->CCR2 = 20;
-	TIM2->EGR |= TIM_EGR_UG;
+	
+	setServoPosition(0);
 	
 	// Start PWM
 	TIM2->CR1 |= TIM_CR1_CEN;
