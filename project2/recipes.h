@@ -4,7 +4,7 @@
 #include "commands.h"
 // Test Recipes
 
-char demo1[] = {
+uint8_t demo1[] = {
 	CMD_MOV(0), // There must NOT be intervening instructions in this group to allow
 	CMD_MOV(5), // verification of default time delay.
 	CMD_MOV(0),

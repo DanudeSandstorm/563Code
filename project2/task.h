@@ -11,9 +11,9 @@
 
 typedef struct
 {
-	char *recipe; // The recipe
-	char *ip; // "instruction pointer"
-	char *loopStart; // Address of the last loop start
+	uint8_t *recipe; // The recipe
+	uint8_t *ip; // "instruction pointer"
+	uint8_t *loopStart; // Address of the last loop start
 	char loopCount; // Number of times we have left to loop
 	char waitCount; // Number of times to wait before continuing
 	char status; // Bitfield of statuses (see above)
@@ -24,7 +24,7 @@ typedef struct
 } Task;
 
 // Glorified constructor
-Task createTask(char *recipe, char servoId) {
+Task createTask(uint8_t *recipe, char servoId) {
 	Task task;
 
 	task.recipe = task.ip = recipe;

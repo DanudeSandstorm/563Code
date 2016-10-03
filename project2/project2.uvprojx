@@ -467,6 +467,11 @@
               <FileType>1</FileType>
               <FilePath>..\shared\UART.c</FilePath>
             </File>
+            <File>
+              <FileName>LED.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\shared\LED.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

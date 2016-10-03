@@ -1,6 +1,8 @@
 #ifndef COMMANDS_H
 #define COMMANDS_H
 
+#include <stdint.h>
+
 // Command header file
 
 // Command opcodes
@@ -12,7 +14,7 @@
 #define OP_END_LOOP (0x5)
 
 // CMD builders
-#define CMD(op, arg) (char)(((op & 0x7) << 5) | (arg & 0x1F))
+#define CMD(op, arg) (uint8_t)(((op & 0x7) << 5) | (arg & 0x1F))
 #define CMD_MOV(arg) CMD(OP_MOV, arg)
 #define CMD_WAIT(arg) CMD(OP_WAIT, arg)
 #define CMD_LOOP_START(arg) CMD(OP_LOOP_START, arg)

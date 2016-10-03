@@ -13,6 +13,9 @@
 
 #define SERVO_SCALAR 5
 
+void setErrorState(void);
+void setServoPosition(uint8_t, uint8_t);
+
 uint8_t servo1Position = 0;
 uint8_t servo2Position = 0;
 
@@ -24,27 +27,29 @@ void interpretCommands(char input) {
 		// Pause recipe execution
 		case 'P':
 		case 'p':
-			servoTask1->status |= STATUS_PAUSED;
-			servoTask2->status |= STATUS_PAUSED;
+			servoTask1.status |= STATUS_PAUSED;
+			servoTask2.status |= STATUS_PAUSED;
 			break;
 		
 		// Continue recipe execution
 		case 'C':
 		case 'c':
-			servoTask1->status &= ~STATUS_PAUSED;
-			servoTask2->status &= ~STATUS_PAUSED;
+			servoTask1.status &= ~STATUS_PAUSED;
+			servoTask2.status &= ~STATUS_PAUSED;
 			break;
 		
 		// Move 1 position to right, if possible
 		case 'R':
 		case 'r':
-			setServoPosition(servoPosition + 1);
+			setServoPosition(1, servo1Position + 1);
+			setServoPosition(2, servo2Position + 1);
 			break;
 		
 		// Move 1 position to left, if possible
 		case 'L':
 		case 'l':
-			setServoPosition(servoPosition - 1);
+			setServoPosition(1, servo1Position - 1);
+			setServoPosition(2, servo2Position - 1);
 			break;
 		
 		// No-op
@@ -56,10 +61,10 @@ void interpretCommands(char input) {
 		// Restart recipe
 		case 'B':
 		case 'b':
-			servoTask1->ip = 0;
-			servoTask1->status = 0;
-			servoTask2->ip = 0;
-			servoTask2->status = 0;
+			servoTask1.ip = 0;
+			servoTask1.status = 0;
+			servoTask2.ip = 0;
+			servoTask2.status = 0;
 			break;
 	}
 }
@@ -79,8 +84,8 @@ void stepTask(Task *task) {
 
 	// Decode current operation for recipe
 	char op, arg;
-	arg = task->recipe[task->ip] & 0x1F; // Last 5 bits contain argument for command
-	op = (task->recipe[task->ip] >> 5) & 0x7; // Most significant 3 bits contain operation code
+	arg =  *(task->ip) & 0x1F; // Last 5 bits contain argument for command
+	op = ( *(task->ip) >> 5) & 0x7; // Most significant 3 bits contain operation code
 
 	task->ip++; // Increment IP
 
@@ -189,7 +194,7 @@ int main(void) {
 
 	// Loop indefinitely while the timer does its thing
 	while (1) {
-		stepTask(servoTask1);
-		stepTask(servoTask2);
+		stepTask(&servoTask1);
+		stepTask(&servoTask2);
 	}
 }
