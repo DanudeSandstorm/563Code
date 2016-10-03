@@ -1,7 +1,10 @@
 #include "stm32l476xx.h"
 #include "UART.h"
 #include "GPIO.h"
+#include "LED.h"
 #include "Timer.h"
+#include "task.h"
+#include "recipes.h"
 
 #include <string.h>
 #include <stdio.h>
@@ -10,20 +13,26 @@
 
 #define SERVO_SCALAR 5
 
-uint8_t servoPosition = 0;
+uint8_t servo1Position = 0;
+uint8_t servo2Position = 0;
+
+Task servoTask1;
+Task servoTask2;
 
 void interpretCommands(char input) {
 	switch (input) {
 		// Pause recipe execution
 		case 'P':
 		case 'p':
-			// TODO
+			servoTask1->status |= STATUS_PAUSED;
+			servoTask2->status |= STATUS_PAUSED;
 			break;
 		
 		// Continue recipe execution
 		case 'C':
 		case 'c':
-			// TODO
+			servoTask1->status &= ~STATUS_PAUSED;
+			servoTask2->status &= ~STATUS_PAUSED;
 			break;
 		
 		// Move 1 position to right, if possible
@@ -47,36 +56,99 @@ void interpretCommands(char input) {
 		// Restart recipe
 		case 'B':
 		case 'b':
-			// TODO
+			servoTask1->ip = 0;
+			servoTask1->status = 0;
+			servoTask2->ip = 0;
+			servoTask2->status = 0;
 			break;
 	}
 }
 
-void setServoPosition(uint8_t position) {
+void stepTask(Task *task) {
+
+	// Check for delays
+	if (task->waitCount) {
+		task->waitCount--;
+		return;
+	}
+
+	// Check for paused/done
+	if (task->status & (STATUS_PAUSED | STATUS_END)) {
+		return;
+	}
+
+	// Decode current operation for recipe
+	char op, arg;
+	arg = task->recipe[task->ip] & 0x1F; // Last 5 bits contain argument for command
+	op = (task->recipe[task->ip] >> 5) & 0x7; // Most significant 3 bits contain operation code
+
+	task->ip++; // Increment IP
+
+	switch (op) {
+		case OP_MOV:
+			setServoPosition(task->servoId, arg);
+			break;
+
+		case OP_WAIT:
+			task->waitCount = arg;
+			break;
+
+		case OP_LOOP_START:
+			task->loopCount = arg;
+			task->loopStart = task->ip;
+			break;
+
+		case OP_END_LOOP:
+			if (task->loopCount) {
+				task->loopCount--;
+				task->ip = task->loopStart;
+			} else {
+				task->loopStart = NULL;
+			}
+
+			break;
+
+		case OP_RECIPE_END:
+			task->status |= STATUS_END;
+			break;
+	}
+}
+void setServoPosition(uint8_t servo, uint8_t position) {
 	// Handle out of bounds values
 	if (position > 5) {
 		setErrorState();
 		return;
 	}
 
-	servoPosition = position;
 	uint8_t pulseWidth = position * SERVO_SCALAR;
 
 	// Set duty cycle of PWM
-	TIM2->CCR1 = pulseWidth;
-	TIM2->CCR2 = pulseWidth;
+	if (servo == 1) {
+		servo1Position = position;
+		TIM2->CCR1 = pulseWidth;
+	}
+
+	if (servo == 2) {
+		servo2Position = position;
+		TIM2->CCR2 = pulseWidth;
+	}
+
 	TIM2->EGR |= TIM_EGR_UG;
 }
 
 void setErrorState() {
-
+	Red_LED_On();
 }
 
 int main(void) {
 
 	TIM2_Init();
 	GPIOA_Init();
+	LED_Init();
 	
+	servoTask1 = createTask(demo1, 1);
+	servoTask2 = createTask(demo1, 2);
+
 	// Started at 8000 and modified until I got 20ms pulses on the oscilloscope with TIMx->ARR set to 200
 	Timer_Prescalar(TIM2, 400);
 	
@@ -108,11 +180,16 @@ int main(void) {
 	TIM2->EGR |= TIM_EGR_UG;
 	
 	
-	setServoPosition(0);
-	
+	setServoPosition(1, 0);
+	setServoPosition(2, 0);
+
 	// Start PWM
 	TIM2->CR1 |= TIM_CR1_CEN;
 	
+
 	// Loop indefinitely while the timer does its thing
-	while (1);
+	while (1) {
+		stepTask(servoTask1);
+		stepTask(servoTask2);
+	}
 }
