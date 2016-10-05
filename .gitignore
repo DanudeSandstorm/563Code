@@ -17,6 +17,7 @@ translations/*.qm
 *.lo
 *.o
 *.obj
+*_g
 
 # Precompiled Headers
 *.gch
