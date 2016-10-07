@@ -17,15 +17,21 @@ pthread_attr_t custCreatorAttr;
 pthread_t tellerThread[NUM_TELLERS];
 pthread_attr_t tellerAttr[NUM_TELLERS];
 
+int simStartTime = time(NULL);
+int getSimulationTime(){
+
+}
+
 /**
  * Takes an amount of time to sleep in simulated seconds, and performs
  * the correct sleep in real time.
- * 100ms real time == 1 sec simulation time
- * 1 sec real time == 10 sec simulation time
+ * 50ms real time == 30sec simulation time
+ * 100ms real time == 1 minute simulation time
+ * 1 sec real time == 10 minute simulation time
  */
 void scaledSleep(int simSleepTime){
-	int realSleepTime = simSleepTime / 10;
-	sleep(realSleepTime);
+	int realSleepTime = simSleepTime * 1666;
+	usleep(realSleepTime);
 }
 
 /**
@@ -81,12 +87,12 @@ void * customerCreator(void * arg){
 	srand (time(NULL));
 	std::cout << "Customer Creator thread created" << std::endl;
 	while(running){
+		//create new customer
+		spawnNewCustomer();
 		//get random interval to wait for next customer
 		int interval = safeRandInterval(60, 60*4);	//customers arrive every 1 to 4 minutes
 		//wait for next customer
 		scaledSleep(interval);
-		//create new customer
-		spawnNewCustomer();
 	}
 	return arg;
 }
@@ -117,9 +123,12 @@ int main(int argc, char *argv[]) {
 	}
 
 	std::cout << "Welcome to the the bank, MOTHERFUCKER" << std::endl;
-	while(running){
-		//if the main thread exits, all other threads it spawned are also killed
-	}
+
+	sleep((7*60)/10);	//sleep for the duration of the day
+	running = false;	//tell threads to stop
+
+	std::cout << "Bank is closed" << std::endl;
+
 	//when day has ended, wait for all tellers to clear the queue and finish their customers
 	for(int i = 0; i < NUM_TELLERS; i++){
 		pthread_join(tellerThread[i], NULL);
