@@ -28,6 +28,31 @@ void scaledSleep(int simSleepTime){
 	sleep(realSleepTime);
 }
 
+/**
+ * rand() is apparently not necessarily thread safe, so we'll wrap it
+ * in a mutex just to make sure
+ */
+pthread_mutex_t randMutex;
+int safeRand(){
+	pthread_mutex_lock( &randMutex );
+	int result = rand();
+	pthread_mutex_unlock(&randMutex);
+	return result;
+}
+
+/**
+ * returns a random int between min and max
+ */
+int safeRandInterval(int min, int max){
+	//sanity check, min must be less than max
+	if(min > max){
+		int swap = min;
+		min = max;
+		max = swap;
+	}
+	return (safeRand() % (max - min)) + min;
+}
+
 void spawnNewCustomer(void){
 	pthread_mutex_lock( &queueMutex );
 	customerQueue.push(customerId);
@@ -50,16 +75,14 @@ int dequeueCustomer(void) {
 /**
  * This method waits a random interval and then creates a new customer, looping
  * until !running. This should only be used in the initialization of the customerCreator
- * thread. Also note: it uses rand(), which is apparently not thread safe so we'll
- * need to find some thread safe way to generate random intervals. Could just wrap
- * rand() in our own safeRand() function with a mutex (like the queue)
+ * thread.
  */
 void * customerCreator(void * arg){
 	srand (time(NULL));
 	std::cout << "Customer Creator thread created" << std::endl;
 	while(running){
 		//get random interval to wait for next customer
-		int interval = (rand() % 180) + 60;	//customers arrive every 1 to 4 minutes
+		int interval = safeRandInterval(60, 60*4);	//customers arrive every 1 to 4 minutes
 		//wait for next customer
 		scaledSleep(interval);
 		//create new customer
@@ -77,8 +100,9 @@ void * teller(void * arg){
 	while(running || !customerQueue.empty()){
 		int curCustomer = dequeueCustomer();
 		if(curCustomer != -1){
-			std::cout << "Serving Customer" << std::endl;
-			scaledSleep(360);	//TODO: sleep for rand val between 30 sec and 6 minutes, but rand() needs to be made thread safe
+			std::cout << "Serving Customer" << std::endl;	//TODO: add customer id and teller id to printlns
+			int interval = safeRandInterval(30, 60*6);	//sleep for rand val between 30 sec and 6 minutes
+			scaledSleep(interval);
 			std::cout << "Finished with customer" << std::endl;
 		}
 	}
