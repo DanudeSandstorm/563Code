@@ -15,7 +15,7 @@ typedef struct {
 	float avgTellerWait;      // the average time tellers wait for customers
 	float avgTransactionTime; // the average time each customer spends with the teller
 	
-	int longestLine;          // the maximum depth of the queue
+	unsigned int longestLine;          // the maximum depth of the queue
 	int maxCustWait;          // the maximum customer wait time in the queue
 	int maxTellerWait;        // the maximum wait time for tellers waiting for customers
 	int maxTransactionTime;   // the maximum transaction time for the tellers
@@ -72,7 +72,7 @@ void updateMetrics(Customer * c, int tellerWait){
 /* Returns the number of milliseconds since the program started */
 int currentTime() {
 	struct timespec curTime;
-	clock_gettime(CLOCK_REALTIME, &curTime);
+	clock_gettime(CLOCK_MONOTONIC, &curTime);
 
 	int deltaSeconds = curTime.tv_sec - simStartTime.tv_sec;
 	int deltaMilliseconds = (curTime.tv_nsec - simStartTime.tv_nsec) / 1000000;
@@ -206,7 +206,7 @@ void * teller(void * arg){
 int main(int argc, char *argv[]) {
 	// Initialize our RNG and time stuff
 	srand(time(NULL));
-	clock_gettime(CLOCK_REALTIME, &simStartTime);
+	clock_gettime(CLOCK_MONOTONIC, &simStartTime);
 
 
 	pthread_create(&custCreatorThread, &custCreatorAttr, &customerCreator, '\0');
