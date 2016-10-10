@@ -10,22 +10,22 @@
 #define NUM_TELLERS 3
 
 typedef struct {
-	int totalCustomers;       // the total number of customers serviced during the day
+	uint32_t totalCustomers;       // the total number of customers serviced during the day
 	float avgCustWait;        // the average time each customer spends waiting in the queue
 	float avgTellerWait;      // the average time tellers wait for customers
 	float avgTransactionTime; // the average time each customer spends with the teller
 	
-	int longestLine;          // the maximum depth of the queue
-	int maxCustWait;          // the maximum customer wait time in the queue
-	int maxTellerWait;        // the maximum wait time for tellers waiting for customers
-	int maxTransactionTime;   // the maximum transaction time for the tellers
+	uint32_t longestLine;          // the maximum depth of the queue
+	uint32_t maxCustWait;          // the maximum customer wait time in the queue
+	uint32_t maxTellerWait;        // the maximum wait time for tellers waiting for customers
+	uint32_t maxTransactionTime;   // the maximum transaction time for the tellers
 } Metrics;
 
 typedef struct {
-	int id;
-	int timeArrived;
-	int timeStarted;
-	int timeFinished;
+	uint16_t id;
+	uint32_t timeArrived;
+	uint32_t timeStarted;
+	uint32_t timeFinished;
 } Customer;
 
 
@@ -70,12 +70,12 @@ void updateMetrics(Customer * c, int tellerWait){
 }
 
 /* Returns the number of milliseconds since the program started */
-int currentTime() {
+uint32_t currentTime() {
 	struct timespec curTime;
 	clock_gettime(CLOCK_REALTIME, &curTime);
 
-	int deltaSeconds = curTime.tv_sec - simStartTime.tv_sec;
-	int deltaMilliseconds = (curTime.tv_nsec - simStartTime.tv_nsec) / 1000000;
+	uint32_t deltaSeconds = curTime.tv_sec - simStartTime.tv_sec;
+	uint32_t deltaMilliseconds = (curTime.tv_nsec - simStartTime.tv_nsec) / 1000000;
 
 	return (deltaSeconds * 1000) + deltaMilliseconds;
 }
@@ -118,6 +118,9 @@ int safeRandInterval(int min, int max){
 	return (safeRand() % (max - min)) + min;
 }
 
+/**
+ * Adds a new customer to the bank line in a thread-safe manner
+ */
 void spawnNewCustomer(void){
 	static int customerId = 1;
 
@@ -145,7 +148,9 @@ void spawnNewCustomer(void){
 	std::cout << "Customer " << newCust.id << " entered the bank." << std::endl;
 }
 
-
+/**
+ * Gets the next customer in line in a thread-safe manner
+ */
 Customer * dequeueCustomer(void) {
 	Customer * custPtr = NULL;
 
@@ -211,7 +216,7 @@ int main(int argc, char *argv[]) {
 
 	pthread_create(&custCreatorThread, &custCreatorAttr, &customerCreator, '\0');
 
-	int ids[3]; // So we can give teller thread its ID
+	int ids[3]; // So we can give teller thread its ID (and not leak the memory)
 	for(int i = 0; i < NUM_TELLERS; i++) {
 		ids[i] = i + 1;
 		pthread_create(&tellerThread[i], &tellerAttr[i], &teller, &ids[i]);
