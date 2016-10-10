@@ -5,6 +5,7 @@
 #include <pthread.h>
 #include <time.h>
 #include <unistd.h>
+#include <vector>
 
 #define NUM_TELLERS 3
 
@@ -25,9 +26,6 @@ typedef struct {
 	int timeArrived;
 	int timeStarted;
 	int timeFinished;
-
-	int timeInQueue;
-	int timeWithTeller;
 } Customer;
 
 
@@ -39,6 +37,14 @@ pthread_mutex_t queueMutex;
 
 Metrics metrics;
 pthread_mutex_t metricMutex;
+
+std::vector<Customer*> servedCustomers;
+pthread_mutex_t servedMutex;
+void storeCustomer(Customer * c){
+	pthread_mutex_lock( &servedMutex );
+	servedCustomers.push_back(c);
+	pthread_mutex_unlock(&servedMutex);
+}
 
 /* Returns the number of milliseconds since the program started */
 int currentTime() {
@@ -90,7 +96,7 @@ int safeRandInterval(int min, int max){
 }
 
 void spawnNewCustomer(void){
-	static customerId = 1;
+	static int customerId = 1;
 
 	// Create a new customer
 	Customer newCust;
@@ -115,6 +121,7 @@ void spawnNewCustomer(void){
 
 	std::cout << "New Customer Added" << std::endl;
 }
+
 
 Customer * dequeueCustomer(void) {
 	Customer * custPtr = NULL;
@@ -154,11 +161,14 @@ void * customerCreator(void * arg){
 void * teller(void * arg){
 	std::cout << "Teller Created" << std::endl;
 	while(running || !customerQueue.empty()){
-		int curCustomer = dequeueCustomer();
-		if(curCustomer != -1){
+		Customer * curCustomer = dequeueCustomer();
+		if(curCustomer != NULL){
 			std::cout << "Serving Customer" << std::endl;	//TODO: add customer id and teller id to printlns
 			int interval = safeRandInterval(30, 60*6);	//sleep for rand val between 30 sec and 6 minutes
+			curCustomer->timeStarted = currentTime();
 			scaledSleep(interval);
+			curCustomer->timeFinished = currentTime();
+			storeCustomer(curCustomer);
 			std::cout << "Finished with customer" << std::endl;
 		}
 	}
@@ -189,12 +199,12 @@ int main(int argc, char *argv[]) {
 		pthread_create(&tellerThread[i], &tellerAttr[i], &teller, '\0');
 	}
 
-	std::cout << "Welcome to the the bank, MOTHERFUCKER" << std::endl;
+	std::cout << "Welcome to the the bank, MOTHERFUCKER." << std::endl;
 
 	sleep((7*60)/10);	//sleep for the duration of the day
 	running = false;	//tell threads to stop
 
-	std::cout << "Bank is closed" << std::endl;
+	std::cout << "Bank is closed." << std::endl;
 
 	//when day has ended, wait for all tellers to clear the queue and finish their customers
 	for(int i = 0; i < NUM_TELLERS; i++){
