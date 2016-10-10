@@ -67,7 +67,7 @@ int currentTime() {
 	clock_gettime(CLOCK_REALTIME, &curTime);
 
 	int deltaSeconds = curTime.tv_sec - simStartTime.tv_sec;
-	int deltaMilliseconds = (curTime.tv_nsec - simStartTime.tv_nsec) / 1000;
+	int deltaMilliseconds = (curTime.tv_nsec - simStartTime.tv_nsec) / 1000000;
 
 	return (deltaSeconds * 1000) + deltaMilliseconds;
 }
