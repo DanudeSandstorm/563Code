@@ -105,15 +105,18 @@ void spawnNewCustomer(void){
 	std::cout << "New Customer Added" << std::endl;
 }
 
-Customer dequeueCustomer(void) {
-	if(!customerQueue.empty()){
-		pthread_mutex_lock( &queueMutex );
-		Customer result = customerQueue.front();
+
+Customer * dequeueCustomer(void) {
+	Customer * custPtr = NULL;
+
+	pthread_mutex_lock( &queueMutex );
+	if(!customerQueue.empty()) {
+		custPtr = &customerQueue.front();
 		customerQueue.pop();
-		pthread_mutex_unlock(&queueMutex);
-		return result;
 	}
-	return -1;
+	pthread_mutex_unlock(&queueMutex);
+
+	return custPtr;
 }
 
 /**
@@ -141,8 +144,8 @@ void * customerCreator(void * arg){
 void * teller(void * arg){
 	std::cout << "Teller Created" << std::endl;
 	while(running || !customerQueue.empty()){
-		Customer curCustomer = dequeueCustomer();
-		if(curCustomer != -1){
+		Customer * curCustomer = dequeueCustomer();
+		if(curCustomer != NULL){
 			std::cout << "Serving Customer" << std::endl;	//TODO: add customer id and teller id to printlns
 			int interval = safeRandInterval(30, 60*6);	//sleep for rand val between 30 sec and 6 minutes
 			scaledSleep(interval);
