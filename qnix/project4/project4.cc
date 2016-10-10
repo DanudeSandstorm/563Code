@@ -38,6 +38,14 @@ pthread_mutex_t queueMutex;
 Metrics metrics;
 pthread_mutex_t metricMutex;
 
+// Customer creation thread
+pthread_t custCreatorThread;
+pthread_attr_t custCreatorAttr;
+
+// Teller threads
+pthread_t tellerThread[NUM_TELLERS];
+pthread_attr_t tellerAttr[NUM_TELLERS];
+
 void updateMetrics(Customer * c, int tellerWait){
 	int custWait = c->timeStarted - c->timeArrived;
 	int transactionTime = c->timeFinished - c->timeStarted;
@@ -134,7 +142,7 @@ void spawnNewCustomer(void){
 	customerId++;
 	metrics.totalCustomers++;
 
-	std::cout << "New Customer Added." << std::endl;
+	std::cout << "Customer " << newCust.id << " entered the bank." << std::endl;
 }
 
 
@@ -174,31 +182,25 @@ void * customerCreator(void * arg){
  * their messages and we can tell them apart
  */
 void * teller(void * arg){
+	int tellerId = *((int *)arg);
+
 	int lastServiceEndTime = currentTime();
 	std::cout << "Teller Created." << std::endl;
 	while(running || !customerQueue.empty()){
 		Customer * curCustomer = dequeueCustomer();
 		if(curCustomer != NULL){
-			std::cout << "Serving Customer." << std::endl;	//TODO: add customer id and teller id to printlns
+			std::cout << "Teller " << tellerId << " serving Customer " << curCustomer->id << std::endl;
 			int interval = safeRandInterval(30, 60*6);	//sleep for rand val between 30 sec and 6 minutes
 			curCustomer->timeStarted = currentTime();
 			scaledSleep(interval);
 			curCustomer->timeFinished = currentTime();
 			updateMetrics(curCustomer, curCustomer->timeFinished - lastServiceEndTime);
 			lastServiceEndTime = curCustomer->timeFinished;
-			std::cout << "Finished with customer." << std::endl;
+			std::cout << "Teller " << tellerId << " finished with customer " << curCustomer << std::endl;
 		}
 	}
 	return arg;
 }
-
-// Customer creation thread
-pthread_t custCreatorThread;
-pthread_attr_t custCreatorAttr;
-
-// Teller threads
-pthread_t tellerThread[NUM_TELLERS];
-pthread_attr_t tellerAttr[NUM_TELLERS];
 
 int main(int argc, char *argv[]) {
 	// Initialize our RNG and time stuff
@@ -208,9 +210,10 @@ int main(int argc, char *argv[]) {
 
 	pthread_create(&custCreatorThread, &custCreatorAttr, &customerCreator, '\0');
 
-
-	for(int i = 0; i < NUM_TELLERS; i++){
-		pthread_create(&tellerThread[i], &tellerAttr[i], &teller, '\0');
+	int ids[3]; // So we can give teller thread its ID
+	for(int i = 0; i < NUM_TELLERS; i++) {
+		ids[i] = i;
+		pthread_create(&tellerThread[i], &tellerAttr[i], &teller, &ids[i]);
 	}
 
 	std::cout << "Welcome to the the bank, MOTHERFUCKER." << std::endl;
