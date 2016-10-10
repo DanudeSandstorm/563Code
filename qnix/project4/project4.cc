@@ -25,9 +25,6 @@ typedef struct {
 	int timeArrived;
 	int timeStarted;
 	int timeFinished;
-
-	int timeInQueue;
-	int timeWithTeller;
 } Customer;
 
 
@@ -148,7 +145,9 @@ void * teller(void * arg){
 		if(curCustomer != NULL){
 			std::cout << "Serving Customer" << std::endl;	//TODO: add customer id and teller id to printlns
 			int interval = safeRandInterval(30, 60*6);	//sleep for rand val between 30 sec and 6 minutes
+			curCustomer->timeStarted = currentTime();
 			scaledSleep(interval);
+			curCustomer->timeFinished = currentTime();
 			std::cout << "Finished with customer" << std::endl;
 		}
 	}
@@ -172,17 +171,18 @@ int main(int argc, char *argv[]) {
 		pthread_create(&tellerThread[i], &tellerAttr[i], &teller, '\0');
 	}
 
-	std::cout << "Welcome to the the bank, MOTHERFUCKER" << std::endl;
+	std::cout << "Welcome to the the bank, MOTHERFUCKER." << std::endl;
 
 	sleep((7*60)/10);	//sleep for the duration of the day
 	running = false;	//tell threads to stop
 
-	std::cout << "Bank is closed" << std::endl;
+	std::cout << "Bank is closed." << std::endl;
 
 	//when day has ended, wait for all tellers to clear the queue and finish their customers
 	for(int i = 0; i < NUM_TELLERS; i++){
 		pthread_join(tellerThread[i], NULL);
 	}
+
 	return EXIT_SUCCESS;
 }
 
