@@ -31,15 +31,22 @@ typedef struct {
 } Customer;
 
 
-
 bool running = true;
+struct timespec simStartTime;
+
 std::queue<Customer> customerQueue;
 pthread_mutex_t queueMutex;
 
 
-int simStartTime = time(NULL);
-int getSimulationTime(){
+/* Returns the number of milliseconds since the program started */
+int currentTime() {
+	struct timespec curTime;
+	clock_gettime(CLOCK_REALTIME, &curTime);
 
+	int deltaSeconds = curTime.tv_sec - simStartTime.tv_sec;
+	int deltaMilliseconds = (curTime.tv_nsec - simStartTime.tv_nsec) / 1000;
+
+	return (deltaSeconds * 1000) + deltaMilliseconds;
 }
 
 /**
@@ -49,7 +56,8 @@ int getSimulationTime(){
  * 100ms real time == 1 minute simulation time
  * 1 sec real time == 10 minute simulation time
  */
-void scaledSleep(int simSleepTime){
+void scaledSleep(int simSleepTime) {
+	// 1666 is the conversion between microseconds and 100 ms
 	int realSleepTime = simSleepTime * 1666;
 	usleep(realSleepTime);
 }
@@ -85,7 +93,7 @@ void spawnNewCustomer(void){
 	// Create a new customer
 	Customer newCust;
 	newCust.id = customerId;
-	newCust.timeArrived = // TODO get clock;
+	newCust.timeArrived = currentTime();
 
 	// Get a lock on the customer queue and push that new customer into it
 	pthread_mutex_lock( &queueMutex );
@@ -114,7 +122,6 @@ int dequeueCustomer(void) {
  * thread.
  */
 void * customerCreator(void * arg){
-	srand (time(NULL));
 	std::cout << "Customer Creator thread created" << std::endl;
 	while(running){
 		//create new customer
@@ -146,14 +153,18 @@ void * teller(void * arg){
 }
 
 int main(int argc, char *argv[]) {
+	// Initialize our RNG and time stuff
+	srand(time(NULL));
+	clock_gettime(CLOCK_REALTIME, &simStartTime);
+
+	// Customer creation thread
 	pthread_t * custCreatorThread;
 	pthread_attr_t custCreatorAttr;
+	pthread_create(custCreatorThread, &custCreatorAttr, &customerCreator, '\0');
 
+	// Teller threads
 	pthread_t tellerThread[NUM_TELLERS];
 	pthread_attr_t tellerAttr[NUM_TELLERS];
-
-	pthread_create(custCreatorThread, &custCreatorAttr, &customerCreator, '\0');
- 
 	for(int i = 0; i < NUM_TELLERS; i++){
 		pthread_create(&tellerThread[i], &tellerAttr[i], &teller, '\0');
 	}
