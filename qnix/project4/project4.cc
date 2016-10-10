@@ -37,6 +37,8 @@ struct timespec simStartTime;
 std::queue<Customer> customerQueue;
 pthread_mutex_t queueMutex;
 
+Metrics metrics;
+pthread_mutex_t metricMutex;
 
 /* Returns the number of milliseconds since the program started */
 int currentTime() {
@@ -98,9 +100,18 @@ void spawnNewCustomer(void){
 	// Get a lock on the customer queue and push that new customer into it
 	pthread_mutex_lock( &queueMutex );
 	customerQueue.push(newCust);
+
+	// Is this the longest line so far?
+	pthread_mutex_lock( &metricMutex );
+	if (metrics.longestLine < customerQueue.size) {
+		metrics.longestLine = customerQueue.size;
+	}
+	pthread_mutex_unlock( &metricMutex );
+
 	pthread_mutex_unlock(&queueMutex);
 
 	customerId++;
+	metrics.totalCustomers++;
 
 	std::cout << "New Customer Added" << std::endl;
 }
@@ -154,6 +165,13 @@ void * teller(void * arg){
 	return arg;
 }
 
+/**
+ * Calculate all sorts of information 
+ */ 
+void calculateMetrics() {
+
+}
+
 int main(int argc, char *argv[]) {
 	// Initialize our RNG and time stuff
 	srand(time(NULL));
@@ -182,6 +200,20 @@ int main(int argc, char *argv[]) {
 	for(int i = 0; i < NUM_TELLERS; i++){
 		pthread_join(tellerThread[i], NULL);
 	}
+
+	calculateMetrics();
+
+	// Now output our metrics information
+	std::cout << std::endl << "BANK METRICS:" << std::endl;
+	std::cout << "Customers served:           " << metrics.totalCustomers     << std::endl;
+	std::cout << "Longest line:               " << metrics.longestLine        << std::endl;
+	std::cout << "Average customer wait time: " << metrics.avgCustWait        << std::endl;
+	std::cout << "Average teller wait time:   " << metrics.avgTellerWait      << std::endl;
+	std::cout << "Average transaction time:   " << metrics.avgTransactionTime << std::endl;
+	std::cout << "Max customer wait time:     " << metrics.maxCustWait        << std::endl;
+	std::cout << "Max teller wait time:       " << metrics.maxTellerWait      << std::endl;
+	std::cout << "Max transaction time:       " << metrics.maxTransactionTime << std::endl;
+
 	return EXIT_SUCCESS;
 }
 
