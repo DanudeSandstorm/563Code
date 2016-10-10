@@ -80,7 +80,7 @@ int safeRandInterval(int min, int max){
 }
 
 void spawnNewCustomer(void){
-	static customerId = 1;
+	static int customerId = 1;
 
 	// Create a new customer
 	Customer newCust;
@@ -97,10 +97,10 @@ void spawnNewCustomer(void){
 	std::cout << "New Customer Added" << std::endl;
 }
 
-int dequeueCustomer(void) {
+Customer dequeueCustomer(void) {
 	if(!customerQueue.empty()){
 		pthread_mutex_lock( &queueMutex );
-		int result = customerQueue.front();
+		Customer result = customerQueue.front();
 		customerQueue.pop();
 		pthread_mutex_unlock(&queueMutex);
 		return result;
@@ -134,7 +134,7 @@ void * customerCreator(void * arg){
 void * teller(void * arg){
 	std::cout << "Teller Created" << std::endl;
 	while(running || !customerQueue.empty()){
-		int curCustomer = dequeueCustomer();
+		Customer curCustomer = dequeueCustomer();
 		if(curCustomer != -1){
 			std::cout << "Serving Customer" << std::endl;	//TODO: add customer id and teller id to printlns
 			int interval = safeRandInterval(30, 60*6);	//sleep for rand val between 30 sec and 6 minutes
