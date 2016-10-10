@@ -8,14 +8,34 @@
 
 #define NUM_TELLERS 3
 
+typedef struct {
+	int totalCustomers;       // the total number of customers serviced during the day
+	float avgCustWait;        // the average time each customer spends waiting in the queue
+	float avgTellerWait;      // the average time tellers wait for customers
+	float avgTransactionTime; // the average time each customer spends with the teller
+	
+	int longestLine;          // the maximum depth of the queue
+	int maxCustWait;          // the maximum customer wait time in the queue
+	int maxTellerWait;        // the maximum wait time for tellers waiting for customers
+	int maxTransactionTime;   // the maximum transaction time for the tellers
+} Metrics;
+
+typedef struct {
+	int id;
+	int timeArrived;
+	int timeStarted;
+	int timeFinished;
+
+	int timeInQueue;
+	int timeWithTeller;
+} Customer;
+
+
+
 bool running = true;
-int customerId = 0;
-std::queue<int> customerQueue;
+std::queue<Customer> customerQueue;
 pthread_mutex_t queueMutex;
-pthread_t * custCreatorThread;
-pthread_attr_t custCreatorAttr;
-pthread_t tellerThread[NUM_TELLERS];
-pthread_attr_t tellerAttr[NUM_TELLERS];
+
 
 int simStartTime = time(NULL);
 int getSimulationTime(){
@@ -60,10 +80,20 @@ int safeRandInterval(int min, int max){
 }
 
 void spawnNewCustomer(void){
+	static customerId = 1;
+
+	// Create a new customer
+	Customer newCust;
+	newCust.id = customerId;
+	newCust.timeArrived = // TODO get clock;
+
+	// Get a lock on the customer queue and push that new customer into it
 	pthread_mutex_lock( &queueMutex );
-	customerQueue.push(customerId);
-	customerId++;
+	customerQueue.push(newCust);
 	pthread_mutex_unlock(&queueMutex);
+
+	customerId++;
+
 	std::cout << "New Customer Added" << std::endl;
 }
 
@@ -116,8 +146,14 @@ void * teller(void * arg){
 }
 
 int main(int argc, char *argv[]) {
-	pthread_create(custCreatorThread, &custCreatorAttr, &customerCreator, '\0');
+	pthread_t * custCreatorThread;
+	pthread_attr_t custCreatorAttr;
 
+	pthread_t tellerThread[NUM_TELLERS];
+	pthread_attr_t tellerAttr[NUM_TELLERS];
+
+	pthread_create(custCreatorThread, &custCreatorAttr, &customerCreator, '\0');
+ 
 	for(int i = 0; i < NUM_TELLERS; i++){
 		pthread_create(&tellerThread[i], &tellerAttr[i], &teller, '\0');
 	}
