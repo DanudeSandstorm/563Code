@@ -5,6 +5,7 @@
 #include <pthread.h>
 #include <time.h>
 #include <unistd.h>
+#include <vector>
 
 #define NUM_TELLERS 3
 
@@ -33,6 +34,14 @@ struct timespec simStartTime;
 
 std::queue<Customer> customerQueue;
 pthread_mutex_t queueMutex;
+
+std::vector<Customer*> servedCustomers;
+pthread_mutex_t servedMutex;
+void storeCustomer(Customer * c){
+	pthread_mutex_lock( &servedMutex );
+	servedCustomers.push_back(c);
+	pthread_mutex_unlock(&servedMutex);
+}
 
 
 /* Returns the number of milliseconds since the program started */
@@ -148,6 +157,7 @@ void * teller(void * arg){
 			curCustomer->timeStarted = currentTime();
 			scaledSleep(interval);
 			curCustomer->timeFinished = currentTime();
+			storeCustomer(curCustomer);
 			std::cout << "Finished with customer" << std::endl;
 		}
 	}
