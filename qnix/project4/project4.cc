@@ -105,15 +105,17 @@ void spawnNewCustomer(void){
 	std::cout << "New Customer Added" << std::endl;
 }
 
-int dequeueCustomer(void) {
-	if(!customerQueue.empty()){
-		pthread_mutex_lock( &queueMutex );
-		int result = customerQueue.front();
+Customer * dequeueCustomer(void) {
+	Customer * custPtr = NULL;
+
+	pthread_mutex_lock( &queueMutex );
+	if(!customerQueue.empty()) {
+		custPtr = &customerQueue.front();
 		customerQueue.pop();
-		pthread_mutex_unlock(&queueMutex);
-		return result;
 	}
-	return -1;
+	pthread_mutex_unlock(&queueMutex);
+
+	return custPtr;
 }
 
 /**
