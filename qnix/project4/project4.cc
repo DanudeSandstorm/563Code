@@ -196,7 +196,7 @@ void * teller(void * arg){
 			curCustomer->timeFinished = currentTime();
 			updateMetrics(curCustomer, curCustomer->timeFinished - lastServiceEndTime);
 			lastServiceEndTime = curCustomer->timeFinished;
-			std::cout << "Teller " << tellerId << " finished with customer " << curCustomer << std::endl;
+			std::cout << "Teller " << tellerId << " finished with customer " << curCustomer->id << std::endl;
 		}
 	}
 	return arg;
