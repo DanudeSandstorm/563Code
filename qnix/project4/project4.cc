@@ -185,7 +185,7 @@ void * teller(void * arg){
 	int tellerId = *((int *)arg);
 
 	int lastServiceEndTime = currentTime();
-	std::cout << "Teller Created." << std::endl;
+	std::cout << "Teller " << tellerId << " is open." << std::endl;
 	while(running || !customerQueue.empty()){
 		Customer * curCustomer = dequeueCustomer();
 		if(curCustomer != NULL){
@@ -196,9 +196,10 @@ void * teller(void * arg){
 			curCustomer->timeFinished = currentTime();
 			updateMetrics(curCustomer, curCustomer->timeFinished - lastServiceEndTime);
 			lastServiceEndTime = curCustomer->timeFinished;
-			std::cout << "Teller " << tellerId << " finished with customer " << curCustomer << std::endl;
+			std::cout << "Teller " << tellerId << " finished with customer " << curCustomer->id << std::endl;
 		}
 	}
+	std::cout << "Teller " << tellerId << " is done for the day" << std::endl;
 	return arg;
 }
 
@@ -212,7 +213,7 @@ int main(int argc, char *argv[]) {
 
 	int ids[3]; // So we can give teller thread its ID
 	for(int i = 0; i < NUM_TELLERS; i++) {
-		ids[i] = i;
+		ids[i] = i + 1;
 		pthread_create(&tellerThread[i], &tellerAttr[i], &teller, &ids[i]);
 	}
 
