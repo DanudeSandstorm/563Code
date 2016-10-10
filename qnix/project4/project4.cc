@@ -38,12 +38,27 @@ pthread_mutex_t queueMutex;
 Metrics metrics;
 pthread_mutex_t metricMutex;
 
-std::vector<Customer*> servedCustomers;
-pthread_mutex_t servedMutex;
-void storeCustomer(Customer * c){
-	pthread_mutex_lock( &servedMutex );
-	servedCustomers.push_back(c);
-	pthread_mutex_unlock(&servedMutex);
+void updateMetrics(Customer * c, int tellerWait){
+	int custWait = c->timeStarted - c->timeArrived;
+	int transactionTime = c->timeFinished - c->timeStarted;
+
+	pthread_mutex_lock( &metricMutex );
+
+	metrics.avgCustWait = ((metrics.avgCustWait * metrics.totalCustomers) + custWait) / (metrics.totalCustomers + 1);
+	metrics.avgTransactionTime = ((metrics.avgTransactionTime * metrics.totalCustomers) + transactionTime) / (metrics.totalCustomers + 1);
+	metrics.avgTellerWait = ((metrics.avgTellerWait * metrics.totalCustomers) + tellerWait) / (metrics.totalCustomers + 1);
+	if(custWait > metrics.maxCustWait){
+		metrics.maxCustWait = custWait;
+	}
+	if(transactionTime > metrics.maxTransactionTime){
+		metrics.maxTransactionTime = transactionTime;
+	}
+	if(tellerWait > metrics.maxTellerWait){
+		metrics.maxTellerWait = tellerWait;
+	}
+	metrics.totalCustomers = metrics.totalCustomers + 1;
+
+	pthread_mutex_unlock(&metricMutex);
 }
 
 /* Returns the number of milliseconds since the program started */
@@ -109,8 +124,8 @@ void spawnNewCustomer(void){
 
 	// Is this the longest line so far?
 	pthread_mutex_lock( &metricMutex );
-	if (metrics.longestLine < customerQueue.size) {
-		metrics.longestLine = customerQueue.size;
+	if (metrics.longestLine < customerQueue.size()) {
+		metrics.longestLine = customerQueue.size();
 	}
 	pthread_mutex_unlock( &metricMutex );
 
@@ -119,7 +134,7 @@ void spawnNewCustomer(void){
 	customerId++;
 	metrics.totalCustomers++;
 
-	std::cout << "New Customer Added" << std::endl;
+	std::cout << "New Customer Added." << std::endl;
 }
 
 
@@ -142,7 +157,7 @@ Customer * dequeueCustomer(void) {
  * thread.
  */
 void * customerCreator(void * arg){
-	std::cout << "Customer Creator thread created" << std::endl;
+	std::cout << "Customer Creator thread created." << std::endl;
 	while(running){
 		//create new customer
 		spawnNewCustomer();
@@ -159,42 +174,41 @@ void * customerCreator(void * arg){
  * their messages and we can tell them apart
  */
 void * teller(void * arg){
-	std::cout << "Teller Created" << std::endl;
+	int lastServiceEndTime = currentTime();
+	std::cout << "Teller Created." << std::endl;
 	while(running || !customerQueue.empty()){
 		Customer * curCustomer = dequeueCustomer();
 		if(curCustomer != NULL){
-			std::cout << "Serving Customer" << std::endl;	//TODO: add customer id and teller id to printlns
+			std::cout << "Serving Customer." << std::endl;	//TODO: add customer id and teller id to printlns
 			int interval = safeRandInterval(30, 60*6);	//sleep for rand val between 30 sec and 6 minutes
 			curCustomer->timeStarted = currentTime();
 			scaledSleep(interval);
 			curCustomer->timeFinished = currentTime();
-			storeCustomer(curCustomer);
-			std::cout << "Finished with customer" << std::endl;
+			updateMetrics(curCustomer, curCustomer->timeFinished - lastServiceEndTime);
+			lastServiceEndTime = curCustomer->timeFinished;
+			std::cout << "Finished with customer." << std::endl;
 		}
 	}
 	return arg;
 }
 
-/**
- * Calculate all sorts of information 
- */ 
-void calculateMetrics() {
+// Customer creation thread
+pthread_t custCreatorThread;
+pthread_attr_t custCreatorAttr;
 
-}
+// Teller threads
+pthread_t tellerThread[NUM_TELLERS];
+pthread_attr_t tellerAttr[NUM_TELLERS];
 
 int main(int argc, char *argv[]) {
 	// Initialize our RNG and time stuff
 	srand(time(NULL));
 	clock_gettime(CLOCK_REALTIME, &simStartTime);
 
-	// Customer creation thread
-	pthread_t * custCreatorThread;
-	pthread_attr_t custCreatorAttr;
-	pthread_create(custCreatorThread, &custCreatorAttr, &customerCreator, '\0');
 
-	// Teller threads
-	pthread_t tellerThread[NUM_TELLERS];
-	pthread_attr_t tellerAttr[NUM_TELLERS];
+	pthread_create(&custCreatorThread, &custCreatorAttr, &customerCreator, '\0');
+
+
 	for(int i = 0; i < NUM_TELLERS; i++){
 		pthread_create(&tellerThread[i], &tellerAttr[i], &teller, '\0');
 	}
@@ -211,7 +225,7 @@ int main(int argc, char *argv[]) {
 		pthread_join(tellerThread[i], NULL);
 	}
 
-	calculateMetrics();
+	std::cout << "All customers have been served." << std::endl;
 
 	// Now output our metrics information
 	std::cout << std::endl << "BANK METRICS:" << std::endl;
