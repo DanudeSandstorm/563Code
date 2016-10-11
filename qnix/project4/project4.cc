@@ -212,6 +212,9 @@ void * teller(void * arg){
 			updateMetrics(curCustomer, curCustomer->timeFinished - lastServiceEndTime);
 			lastServiceEndTime = curCustomer->timeFinished;
 			std::cout << "Teller " << tellerId << " finished with customer " << curCustomer->id << std::endl;
+
+			// Don't leak memory!
+			free(curCustomer);
 		}
 	}
 	std::cout << "Teller " << tellerId << " is done for the day" << std::endl;
