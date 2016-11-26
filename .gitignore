@@ -42,3 +42,7 @@ translations/*.qm
 *.exe
 *.out
 *.app
+
+# Gedit files
+*~
+
