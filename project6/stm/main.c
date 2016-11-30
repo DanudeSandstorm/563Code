@@ -1,6 +1,5 @@
 #include "stm32l476xx.h"
 #include "UART.h"
-#include "Timer.h"
 
 #define PWM_PERIOD (200) // 20ms
 #define ASCII_0    (48)  // ASCII 48 -> 0
@@ -27,10 +26,10 @@ int main(void) {
 		char input = USART_Read(USART2);
 
 		// Convert valid codes to numbers
-		if (ASCII_0 <= input && input <= ASCII_5) {
-			uint8_t voltage = input - ASCII_0;
+		//if (ASCII_0 <= input && input <= ASCII_5) {
+			uint8_t voltage = 5;//input - ASCII_0;
 			setServoPosition(voltage);
-		}
+		//}
 	}
 }
 
@@ -41,8 +40,8 @@ void PWM_Init() {
 
 	/* Started at 8000 and modified until I got 20ms pulses on the
 	 * oscilloscope with TIMx->ARR set to 200 */
-	TIMx->PSC = 400;         // Set prescalar
-	TIMx->EGR |= TIM_EGR_UG; // Trigger timer event to force load prescalar
+	TIM2->PSC = 400;         // Set prescalar
+	TIM2->EGR |= TIM_EGR_UG; // Trigger timer event to force load prescalar
 	
 	// Set TIM2 Channel 1 to PWM mode
 	TIM2->CCMR1 |= TIM_CCMR1_OC1M_2 | TIM_CCMR1_OC1M_1;
