@@ -46,3 +46,6 @@ translations/*.qm
 # Gedit files
 *~
 
+# QNIX stuff
+*/.metadata/*
+
