@@ -53,3 +53,6 @@ translations/*.qm
 */Listings/*
 */Objects/*
 */RTE/*
+
+# STM HAL libraries
+*/STM32L4xx_HAL_Driver/*

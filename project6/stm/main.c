@@ -1,5 +1,7 @@
 #include "stm32l476xx.h"
 #include "UART.h"
+#include "stm32l4xx_hal_usart.h"
+
 
 #define PWM_PERIOD (200) // 20ms
 #define ASCII_0    (48)  // ASCII 48 -> 0
