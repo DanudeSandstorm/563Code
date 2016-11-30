@@ -49,3 +49,7 @@ translations/*.qm
 # QNIX stuff
 */.metadata/*
 
+# Microvision stuff
+*/Listings/*
+*/Objects/*
+*/RTE/*
