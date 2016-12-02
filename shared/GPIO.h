@@ -3,6 +3,11 @@
 
 #include "stm32l476xx.h"
 
+#define PIN_0 (0)
+#define PIN_1 (1)
+#define PIN_2 (2)
+#define PIN_3 (3)
+
 void GPIOA_Init(void);
 
 #define GPIO_RES_PULLDOWN 0x2

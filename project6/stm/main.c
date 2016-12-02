@@ -1,13 +1,13 @@
 #include "stm32l476xx.h"
-#include "UART.h"
-#include "stm32l4xx_hal_usart.h"
+#include "GPIO.h"
+#include "Timer.h"
 
-
-#define PWM_PERIOD (200) // 20ms
-#define ASCII_0    (48)  // ASCII 48 -> 0
-#define ASCII_5    (53)  // ASCII 53 -> 5
+#define PWM_PERIOD  (200) // 20ms
+#define MIN_VOLTAGE (-5)
+#define MAX_VOLTAGE (5)
 
 void PWM_Init(void);
+int8_t readVoltage(void);
 void setServoPosition(uint8_t position);
 
 /**
@@ -17,22 +17,52 @@ void setServoPosition(uint8_t position);
  */
 int main(void) {
 
+	// PWM and GPIO setup
 	PWM_Init();
-	UART2_GPIO_Init();
+	GPIOA_Init();
+	GPIO_Resistor(GPIOA, PIN_0, GPIO_RES_PULLDOWN);
+	GPIO_Resistor(GPIOA, PIN_1, GPIO_RES_PULLDOWN);
+	GPIO_Resistor(GPIOA, PIN_2, GPIO_RES_PULLDOWN);
+	GPIO_Resistor(GPIOA, PIN_3, GPIO_RES_PULLDOWN);
+	GPIO_Mode(GPIOA, PIN_0, GPIO_MODE_INPUT);
+	GPIO_Mode(GPIOA, PIN_1, GPIO_MODE_INPUT);
+	GPIO_Mode(GPIOA, PIN_2, GPIO_MODE_INPUT);
+	GPIO_Mode(GPIOA, PIN_3, GPIO_MODE_INPUT);
 
 	// TODO wait until button is pressed
 
 	// Display voltage using servo
 	while (1) {
-		// Block until we read a character
-		char input = USART_Read(USART2);
+		int8_t voltage = readVoltage();
 
-		// Convert valid codes to numbers
-		//if (ASCII_0 <= input && input <= ASCII_5) {
-			uint8_t voltage = 5;//input - ASCII_0;
-			setServoPosition(voltage);
-		//}
+		// Validate voltage is within range
+		if (MIN_VOLTAGE <= voltage && voltage <= MAX_VOLTAGE) {
+			setServoPosition(voltage - MIN_VOLTAGE);
+		}
 	}
+}
+
+/* Reads the voltage encoded on the GPIOA pins.
+ *
+ * Pin 3 is the sign bit.
+ * Pins 2, 1, and 0 represent the voltage value.
+ */
+int8_t readVoltage() {
+	int8_t voltage;
+
+	// Set the sign bit
+	if (GPIO_Read(GPIOA, PIN_3)) {
+		voltage = 0x80;
+	} else {
+		voltage = 0x00;
+	}
+
+	// Read the value in
+	voltage |= GPIO_Read(GPIOA, PIN_2) << 2;
+	voltage |= GPIO_Read(GPIOA, PIN_1) << 1;
+	voltage |= GPIO_Read(GPIOA, PIN_0);
+
+	return voltage;
 }
 
 /* Servo PWM Initialize */
