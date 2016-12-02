@@ -100,20 +100,23 @@ void PWM_Init() {
 
 void setServoPosition(uint8_t position) {
 
-	// TODO potentially pre-calculate these widths
-	static double DUTY_CYCLE[] = {
-		0.04,   // 0
-		0.055,  // 1
-		0.0725, // 2
-		0.085,  // 3
-		0.10,   // 4
-		0.12    // 5
+	// These values determined experimentally using the debugger
+	static double uint8_t POSITIONS[] = {
+		0x11, // -5V - At 0
+		0x14, // -4V - Between 0 and 1
+		0x16, // -3V - At 1
+		0x1A, // -2V - Between 1 and 2
+		0x1D, // -1V - At 2
+		0x20, //  0V - Between 2 and 3
+		0x23, //  1V - At 3
+		0x25, //  2V - Between 3 and 4
+		0x28, //  3V - At 4
+		0x2B, //  4V - Between 4 and 5
+		0x2E  //  5V - At 5
 	};
 
-	uint32_t pulseWidth = (uint32_t)(DUTY_CYCLE[position] * PWM_PERIOD);
-
 	// Set duty cycle of PWM
-	TIM2->CCR1 = pulseWidth;
+	TIM2->CCR1 = POSITIONS[position];
 
 	// Trigger update to load new pulse
 	TIM2->EGR |= TIM_EGR_UG;
