@@ -8,8 +8,8 @@
 #define MAX_VOLTAGE   (5)
 
 void PWM_Init(void);
-int8_t readVoltage(void);
-void setServoPosition(uint8_t position);
+int8_t Read_Voltage(void);
+void Set_Servo_Position(uint8_t position);
 
 /**
  * Reads single-digit values from UART,
@@ -37,11 +37,11 @@ int main(void) {
 	
 	// Display voltage using servo
 	while (1) {
-		int8_t voltage = readVoltage();
+		int8_t voltage = Read_Voltage();
 
 		// Validate voltage is within range
 		if (MIN_VOLTAGE <= voltage && voltage <= MAX_VOLTAGE) {
-			setServoPosition(voltage - MIN_VOLTAGE);
+			Set_Servo_Position(voltage - MIN_VOLTAGE);
 		}
 	}
 }
@@ -51,7 +51,7 @@ int main(void) {
  * Pin 3 is the sign bit.
  * Pins 2, 1, and 0 represent the voltage value.
  */
-int8_t readVoltage() {
+int8_t Read_Voltage() {
 	int8_t voltage;
 
 	// Set the sign bit
@@ -98,10 +98,10 @@ void PWM_Init() {
 	TIM2->CR1 |= TIM_CR1_CEN;             // TIM2 Counter enable
 }
 
-void setServoPosition(uint8_t position) {
+void Set_Servo_Position(uint8_t position) {
 
 	// These values determined experimentally using the debugger
-	static double uint8_t POSITIONS[] = {
+	static uint8_t POSITIONS[] = {
 		0x11, // -5V - At 0
 		0x14, // -4V - Between 0 and 1
 		0x16, // -3V - At 1
