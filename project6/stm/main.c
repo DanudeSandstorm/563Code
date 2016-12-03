@@ -20,12 +20,13 @@ int main(void) {
 
 	// PWM and GPIO setup
 	PWM_Init();
+	
+	GPIOB_Init();
+	GPIO_Resistor(GPIOB, PIN_2, GPIO_RES_PULLDOWN);
+	GPIO_Resistor(GPIOB, PIN_3, GPIO_RES_PULLDOWN);
+	GPIO_Resistor(GPIOB, PIN_6, GPIO_RES_PULLDOWN);
+	GPIO_Resistor(GPIOB, PIN_7, GPIO_RES_PULLDOWN);
 	/*
-	GPIOA_Init();
-	GPIO_Resistor(GPIOA, PIN_0, GPIO_RES_PULLDOWN);
-	GPIO_Resistor(GPIOA, PIN_1, GPIO_RES_PULLDOWN);
-	GPIO_Resistor(GPIOA, PIN_2, GPIO_RES_PULLDOWN);
-	GPIO_Resistor(GPIOA, PIN_3, GPIO_RES_PULLDOWN);
 	GPIO_Mode(GPIOA, PIN_0, GPIO_MODE_INPUT);
 	GPIO_Mode(GPIOA, PIN_1, GPIO_MODE_INPUT);
 	GPIO_Mode(GPIOA, PIN_2, GPIO_MODE_INPUT);
@@ -46,25 +47,25 @@ int main(void) {
 	}
 }
 
-/* Reads the voltage encoded on the GPIOA pins.
+/* Reads the voltage encoded on the GPIOB pins.
  *
- * Pin 3 is the sign bit.
- * Pins 2, 1, and 0 represent the voltage value.
+ * Pin 7 is the sign bit.
+ * Pins 6, 3, and 2 represent the voltage value.
  */
 int8_t Read_Voltage() {
 	int8_t voltage;
 
 	// Set the sign bit
-	if (GPIO_Read(GPIOA, PIN_3)) {
+	if (GPIO_Read(GPIOB, PIN_7)) {
 		voltage = 0x80;
 	} else {
 		voltage = 0x00;
 	}
 
 	// Read the value in
-	voltage |= GPIO_Read(GPIOA, PIN_2) << 2;
-	voltage |= GPIO_Read(GPIOA, PIN_1) << 1;
-	voltage |= GPIO_Read(GPIOA, PIN_0);
+	voltage |= GPIO_Read(GPIOB, PIN_6) << 2;
+	voltage |= GPIO_Read(GPIOB, PIN_3) << 1;
+	voltage |= GPIO_Read(GPIOB, PIN_2);
 
 	return voltage;
 }
