@@ -21,8 +21,8 @@ void GPIOB_Init(void);
 void GPIO_Resistor(GPIO_TypeDef * GPIOx, uint8_t pin, uint8_t resmode);
 
 
-#define GPIO_MODE_INPUT     0x0
-#define GPIO_MODE_OUTPUT    0x1
+#define GPIO_MODE_INPUT     0x1 // Data sheet appears to be wrong about these values
+#define GPIO_MODE_OUTPUT    0x0
 #define GPIO_MODE_ALTERNATE 0x2
 void GPIO_Mode(GPIO_TypeDef * GPIOx, uint8_t pin, uint8_t pinmode);
 void GPIO_ResetMode(GPIO_TypeDef * GPIOx);

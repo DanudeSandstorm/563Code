@@ -2,6 +2,17 @@
 #include "GPIO.h"
 #include "Timer.h"
 
+/********************
+ * EXPECTED PIN OUT *
+ ********************
+ * PA0 - PWM output *
+ *                  *
+ * PB7 - Vin sign   *
+ * PB6 - Vin bit 2  *
+ * PB3 - Vin bit 1  *
+ * PB2 - Vin bit 0  *
+ ********************/
+
 #define PWM_PRESCALAR (200)
 #define PWM_PERIOD    (400) // 20ms
 #define MIN_VOLTAGE   (-5)
@@ -34,7 +45,7 @@ int main(void) {
 	GPIO_Mode(GPIOB, PIN_7, GPIO_MODE_INPUT);
 	
 	// TODO wait until button is pressed
-	while (1);
+	//while (1);
 	
 	// Display voltage using servo
 	while (1) {
@@ -53,20 +64,18 @@ int main(void) {
  * Pins 6, 3, and 2 represent the voltage value.
  */
 int8_t Read_Voltage() {
-	int8_t voltage;
-
-	// Set the sign bit
-	if (GPIO_Read(GPIOB, PIN_7)) {
-		voltage = 0x80;
-	} else {
-		voltage = 0x00;
-	}
+	int8_t voltage = 0;
 
 	// Read the value in
 	voltage |= GPIO_Read(GPIOB, PIN_6) << 2;
 	voltage |= GPIO_Read(GPIOB, PIN_3) << 1;
 	voltage |= GPIO_Read(GPIOB, PIN_2);
 
+	// Set the sign
+	if (GPIO_Read(GPIOB, PIN_7)) {
+		voltage *= -1;
+	}
+	
 	return voltage;
 }
 
@@ -118,8 +127,5 @@ void Set_Servo_Position(uint8_t position) {
 
 	// Set duty cycle of PWM
 	TIM2->CCR1 = POSITIONS[position];
-
-	// Trigger update to load new pulse
-	TIM2->EGR |= TIM_EGR_UG;
 }
 
